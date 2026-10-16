@@ -1,0 +1,17 @@
+{
+  "name": "ahtapot",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @ahtapot/web",
+    "build:web": "npm run build -w @ahtapot/web",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "db:generate": "npm run generate -w @ahtapot/db",
+    "db:migrate": "npm run migrate -w @ahtapot/db",
+    "deploy": "bash scripts/deploy.sh"
+  }
+}
