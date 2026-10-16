@@ -27,3 +27,12 @@ export async function requireRole(role: UserRole): Promise<CurrentUser> {
   if (user.role !== role) redirect("/");
   return user;
 }
+
+// For Server Actions: skips the private cache and the session cookie cache so a revoked role takes effect immediately.
+export async function verifyAdmin() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+    query: { disableCookieCache: true },
+  });
+  return session?.user.role === "admin" ? session.user : null;
+}
