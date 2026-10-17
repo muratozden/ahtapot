@@ -7,8 +7,6 @@ import { requireRole } from "./session";
 
 const { marketplaceCategories, marketplaces } = schema;
 
-export { MARKETPLACE_CATEGORY_TREE_VERSION };
-
 const PAGE_SIZE = 50;
 
 export type CategoryListParams = {
@@ -40,7 +38,7 @@ export async function getCategoryListSummary(marketplaceId: string) {
     db.select({ n: count() }).from(marketplaceCategories).where(and(base, eq(marketplaceCategories.isLeaf, true))),
   ]);
 
-  return { total: totals.n, leaves: leaves.n, treeVersion: MARKETPLACE_CATEGORY_TREE_VERSION };
+  return { total: totals.n, leaves: leaves.n };
 }
 
 export async function listMarketplaceCategories({ marketplaceId, q, page = 1 }: CategoryListParams) {

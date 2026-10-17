@@ -20,7 +20,6 @@ import {
   getCategoryListSummary,
   listMarketplaceCategories,
   listMarketplacesForCategories,
-  MARKETPLACE_CATEGORY_TREE_VERSION,
 } from "@/lib/marketplace-categories";
 import { cn } from "@/lib/cn";
 
@@ -77,10 +76,6 @@ export default function AdminCategoriesPage({ searchParams }: PageProps<"/admin/
               eşleşecek.
             </p>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3 py-1.5 text-xs font-semibold text-ink-soft">
-            <Tag className="size-3.5 text-drop" strokeWidth={2.25} />
-            {MARKETPLACE_CATEGORY_TREE_VERSION}
-          </span>
         </div>
       </header>
 
@@ -145,11 +140,7 @@ async function CategoryTable({ searchParams }: { searchParams: PageProps<"/admin
           </span>
           <p className="mt-4 font-semibold text-ink">Henüz kategori yok</p>
           <p className="mt-1 max-w-md text-muted">
-            Yerelde{" "}
-            <code className="rounded-lg bg-surface px-2 py-0.5 text-xs font-medium text-ink-soft">
-              npm run db:import-categories
-            </code>{" "}
-            komutunu çalıştır.
+            Bu pazaryeri için henüz kategori listesi yüklenmemiş. Daha sonra tekrar kontrol edin.
           </p>
         </div>
       </div>
