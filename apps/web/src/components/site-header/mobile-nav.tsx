@@ -4,10 +4,10 @@ import Link from "next/link";
 import { ChevronDown, Menu, Plus, X } from "lucide-react";
 import { Accordion, Dialog } from "radix-ui";
 import { Logo } from "./logo";
-import { navGroups } from "./nav-config";
+import { navGroupsFor } from "./nav-config";
 import { SearchBar } from "./search-bar";
 
-export function MobileNav() {
+export function MobileNav({ isAdmin = false }: { isAdmin?: boolean }) {
   return (
     <Dialog.Root>
       <Dialog.Trigger
@@ -34,7 +34,7 @@ export function MobileNav() {
           <div className="flex-1 overflow-y-auto px-6 pb-6">
             <SearchBar className="mb-4 md:hidden" />
             <Accordion.Root type="single" collapsible>
-              {navGroups.map((group) => (
+              {navGroupsFor(isAdmin).map((group) => (
                 <Accordion.Item key={group.id} value={group.id} className="border-b border-line">
                   <Accordion.Header>
                     <Accordion.Trigger className="group flex w-full items-center justify-between py-4 text-base font-semibold text-ink outline-none">

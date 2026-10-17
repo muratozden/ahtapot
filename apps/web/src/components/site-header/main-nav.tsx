@@ -6,9 +6,9 @@ import { usePathname } from "next/navigation";
 import { ArrowRight, ChevronDown, CircleHelp } from "lucide-react";
 import { NavigationMenu } from "radix-ui";
 import { cn } from "@/lib/cn";
-import { navGroups, type NavGroup } from "./nav-config";
+import { navGroupsFor, type NavGroup } from "./nav-config";
 
-type MainNavProps = { className?: string };
+type MainNavProps = { className?: string; isAdmin?: boolean };
 
 export function MainNav(props: MainNavProps) {
   return (
@@ -22,11 +22,11 @@ function NavMenuWithPathname(props: MainNavProps) {
   return <NavMenu {...props} pathname={usePathname()} />;
 }
 
-function NavMenu({ className, pathname }: MainNavProps & { pathname?: string }) {
+function NavMenu({ className, isAdmin = false, pathname }: MainNavProps & { pathname?: string }) {
   return (
     <NavigationMenu.Root delayDuration={80} skipDelayDuration={300} className={cn("relative", className)}>
       <NavigationMenu.List className="flex items-center gap-1">
-        {navGroups.map((group) => {
+        {navGroupsFor(isAdmin).map((group) => {
           const active = pathname?.startsWith(group.basePath) ?? false;
           return (
             <NavigationMenu.Item key={group.id} value={group.id} className="relative">

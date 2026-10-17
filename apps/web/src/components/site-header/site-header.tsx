@@ -6,6 +6,7 @@ import { Logo } from "./logo";
 import { MainNav } from "./main-nav";
 import { MobileNav } from "./mobile-nav";
 import { NotificationsMenu } from "./notifications-menu";
+import { RoleAwareMainNav, RoleAwareMobileNav } from "./role-aware-nav";
 import { SearchBar } from "./search-bar";
 
 export function SiteHeader() {
@@ -13,13 +14,17 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-line/70 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="flex h-20 items-center gap-4 px-4 sm:px-6 xl:gap-8 xl:px-8">
         <div className="flex items-center gap-1">
-          <MobileNav />
+          <Suspense fallback={<MobileNav />}>
+            <RoleAwareMobileNav />
+          </Suspense>
           <Logo />
         </div>
 
         <SearchBar className="hidden max-w-[520px] flex-1 md:flex" />
 
-        <MainNav className="hidden lg:block" />
+        <Suspense fallback={<MainNav className="hidden lg:block" />}>
+          <RoleAwareMainNav className="hidden lg:block" />
+        </Suspense>
 
         <div className="ml-auto flex items-center gap-2 sm:gap-3">
           <Link

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CreditCard, LogOut, Settings, Store, Users } from "lucide-react";
+import { CreditCard, LogOut, Settings, Users } from "lucide-react";
 import { DropdownMenu } from "radix-ui";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/cn";
@@ -13,8 +13,6 @@ const links = [
   { label: "Abonelik ve fatura", href: "/hesap/abonelik", icon: CreditCard },
   { label: "Ekip", href: "/hesap/ekip", icon: Users },
 ];
-
-const adminLinks = [{ label: "Satıcı yönetimi", href: "/admin/saticilar", icon: Store }];
 
 const roleLabels: Record<CurrentUser["role"], string> = {
   admin: "Admin",
@@ -70,7 +68,7 @@ export function UserMenu({ user }: { user: CurrentUser }) {
             {user.companyName && <p className="truncate text-sm text-muted">{user.companyName}</p>}
           </div>
           <DropdownMenu.Separator className="mx-1 mb-1 h-px bg-line" />
-          {(user.role === "admin" ? [...adminLinks, ...links] : links).map((l) => (
+          {links.map((l) => (
             <DropdownMenu.Item key={l.href} asChild>
               <Link
                 href={l.href}

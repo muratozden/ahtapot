@@ -10,3 +10,4 @@ export function createDb(url = process.env.DATABASE_URL) {
 
 export type Db = ReturnType<typeof createDb>;
 export * as schema from "./schema.ts";
+export { MARKETPLACE_CATEGORY_TREE_VERSION } from "./category-tree-version.ts";

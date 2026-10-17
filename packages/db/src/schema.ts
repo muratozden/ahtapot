@@ -108,6 +108,30 @@ export const marketplaces = pgTable("marketplaces", {
   minDelayMs: integer("min_delay_ms").notNull().default(5000),
 });
 
+/** Marketplace category trees (imported reference data for commission mapping). */
+export const marketplaceCategories = pgTable(
+  "marketplace_categories",
+  {
+    id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+    marketplaceId: text("marketplace_id")
+      .notNull()
+      .references(() => marketplaces.id),
+    externalId: text("external_id").notNull(),
+    parentId: bigint("parent_id", { mode: "number" }),
+    name: text("name").notNull(),
+    path: text("path").notNull(),
+    isLeaf: boolean("is_leaf").notNull(),
+    depth: smallint("depth"),
+    treeVersion: text("tree_version").notNull(),
+    importedAt: timestamp("imported_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("marketplace_categories_mp_ext_ver_uq").on(t.marketplaceId, t.externalId, t.treeVersion),
+    index("marketplace_categories_mp_parent_idx").on(t.marketplaceId, t.parentId),
+    index("marketplace_categories_mp_ver_idx").on(t.marketplaceId, t.treeVersion),
+  ],
+);
+
 /** One row per unique product page, shared by every tenant that tracks it. */
 export const listings = pgTable(
   "listings",

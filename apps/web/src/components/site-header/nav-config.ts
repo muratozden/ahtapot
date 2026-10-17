@@ -6,11 +6,14 @@ import {
   Code,
   FileChartColumn,
   History,
+  FolderTree,
+  LayoutDashboard,
   LifeBuoy,
   Link2,
   Package,
   Send,
   Sparkles,
+  Store,
   Tags,
   type LucideIcon,
 } from "lucide-react";
@@ -148,3 +151,34 @@ export const navGroups: NavGroup[] = [
     ],
   },
 ];
+
+/** Shown only to admins; add screens here as they are built. */
+export const adminNavGroup: NavGroup = {
+  id: "yonetim",
+  label: "Yönetim",
+  basePath: "/admin",
+  items: [
+    {
+      title: "Genel bakış",
+      description: "Satıcılar, veri toplama ve sistem sağlığı",
+      href: "/admin",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "Satıcılar",
+      description: "Satıcı hesaplarını ekle ve düzenle",
+      href: "/admin/saticilar",
+      icon: Store,
+    },
+    {
+      title: "Kategoriler",
+      description: "Pazaryeri kategori ağaçları",
+      href: "/admin/kategoriler",
+      icon: FolderTree,
+    },
+  ],
+};
+
+export function navGroupsFor(isAdmin: boolean) {
+  return isAdmin ? [...navGroups, adminNavGroup] : navGroups;
+}

@@ -12,6 +12,7 @@
     "infra:down": "docker compose down",
     "db:generate": "npm run generate -w @ahtapot/db",
     "db:migrate": "npm run migrate -w @ahtapot/db",
+    "db:import-categories": "node --env-file=.env packages/db/scripts/import-categories.mts",
     "deploy": "bash scripts/deploy.sh"
   }
 }
