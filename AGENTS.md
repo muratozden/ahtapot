@@ -140,7 +140,7 @@ Kod yazmadan önce `node_modules/next/dist/docs/` altındaki ilgili rehberi oku 
 ### Kategori ve komisyon (taslak, onay bekliyor)
 
 - Referans: `marketplace_categories` (pazaryeri başına harici `external_id`, iç `id`, `parent_id`, `path`, `is_leaf`, `tree_version`).
-- Komisyon: `category_commission_rates` (kategori FK, oran, `effective_from` / `effective_to`; yaprak veya üst düğüm; çözümleme yukarı yürür).
+- Komisyon ve oranlar: `category_commission_rates` (komisyon, KDV, pazarlama bedeli, pazaryeri hizmet bedeli — hepsi % olarak; admin `/admin/kategoriler`).
 - Listing: `listings.marketplace_category_id` + yedek `category_external_id`, `category_path` (çekim anı).
 - Satıcı giderleri: `tracked_listing_economics` (ürün maliyeti, kargo, diğer, isteğe bağlı komisyon override).
 - Import: n11 / Trendyol `_temp/category.sql` içindeki `*_categories` tabloları; attribute ve marka tabloları alınmaz. Hepsiburada ağacı eksikse aynı şemaya farklı kaynakla `tree_version` değiştirilerek yeniden yüklenir.

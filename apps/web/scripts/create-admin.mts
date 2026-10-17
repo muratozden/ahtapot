@@ -1,5 +1,5 @@
 // Usage: npm run create-admin -w @ahtapot/web -- --email you@example.com --name "Ad Soyad" --password "********"
-// An existing user with the same email is promoted to admin; their password is left unchanged.
+// An existing user with the same email is promoted to admin. Pass --password to set a new password.
 import { randomUUID } from "node:crypto";
 import { parseArgs } from "node:util";
 import { createDb, schema } from "@ahtapot/db";
@@ -27,7 +27,25 @@ try {
 
   if (existing) {
     await db.update(schema.users).set({ role: "admin" }).where(eq(schema.users.id, existing.id));
-    console.log(`${email} admin yapıldı.`);
+
+    if (values.password) {
+      if (values.password.length < 8) {
+        console.error("Şifre en az 8 karakter olmalı.");
+        process.exit(1);
+      }
+      const password = await hashPassword(values.password);
+      const account = await db.query.accounts.findFirst({
+        where: eq(schema.accounts.userId, existing.id),
+      });
+      if (!account) {
+        console.error("Bu kullanıcıda credential hesabı yok; şifre güncellenemedi.");
+        process.exit(1);
+      }
+      await db.update(schema.accounts).set({ password }).where(eq(schema.accounts.id, account.id));
+      console.log(`${email} admin — şifre güncellendi.`);
+    } else {
+      console.log(`${email} admin yapıldı (şifre değişmedi).`);
+    }
   } else {
     if (!values.name || !values.password || values.password.length < 8) {
       console.error("Yeni admin için --name ve en az 8 karakterlik --password zorunlu.");

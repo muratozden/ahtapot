@@ -11,8 +11,11 @@ import {
   Tag,
   type LucideIcon,
 } from "lucide-react";
+import { CategoryFeeColumns } from "./category-fee-columns";
 import { CategoryFilters } from "./category-filters";
+import { hasMarketplaceLogo, MarketplaceLogo } from "./marketplace-logo";
 import { styleForMarketplace } from "./marketplace-style";
+import { getCategoryFeesForCategories, type CategoryFeeRates } from "@/lib/category-commissions";
 import {
   getCategoryListSummary,
   listMarketplaceCategories,
@@ -24,6 +27,29 @@ import { cn } from "@/lib/cn";
 export const metadata: Metadata = { title: "Kategoriler" };
 
 const numberFormat = new Intl.NumberFormat("tr-TR");
+
+function storedRateToPercent(rate: string): string {
+  const n = Number(rate) * 100;
+  if (!Number.isFinite(n)) return "";
+  const rounded = Math.round(n * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/\.?0+$/, "");
+}
+
+function feePercentsForRow(fees: CategoryFeeRates) {
+  return {
+    commission: fees.commission ? storedRateToPercent(fees.commission) : null,
+    vat: fees.vat ? storedRateToPercent(fees.vat) : null,
+    marketing: fees.marketing ? storedRateToPercent(fees.marketing) : null,
+    marketplaceService: fees.marketplaceService ? storedRateToPercent(fees.marketplaceService) : null,
+  };
+}
+
+const emptyFees: CategoryFeeRates = {
+  commission: null,
+  vat: null,
+  marketing: null,
+  marketplaceService: null,
+};
 
 type Search = { pazaryeri?: string; q?: string; sayfa?: string };
 
@@ -105,6 +131,8 @@ async function CategoryTable({ searchParams }: { searchParams: PageProps<"/admin
     listMarketplaceCategories({ marketplaceId, q: sp.q, page }),
   ]);
 
+  const categoryFees = await getCategoryFeesForCategories(list.rows.map((r) => r.id));
+
   const mpName = marketplaces.find((m) => m.id === marketplaceId)?.name ?? marketplaceId;
   const branches = summary.total - summary.leaves;
 
@@ -144,9 +172,14 @@ async function CategoryTable({ searchParams }: { searchParams: PageProps<"/admin
 
       <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-canvas/80 px-5 py-3.5">
-          <div className="flex items-center gap-2">
-            <span className={cn("size-2.5 rounded-full", accent.dot)} aria-hidden />
-            <span className="font-bold text-ink">{mpName}</span>
+          <div className="flex items-center gap-2.5">
+            {hasMarketplaceLogo(marketplaceId) ? (
+              <MarketplaceLogo marketplaceId={marketplaceId} className="h-4" />
+            ) : (
+              <span className={cn("size-2.5 rounded-full", accent.dot)} aria-hidden />
+            )}
+            {!hasMarketplaceLogo(marketplaceId) && <span className="font-bold text-ink">{mpName}</span>}
+            {hasMarketplaceLogo(marketplaceId) && <span className="sr-only">{mpName}</span>}
             {sp.q && (
               <span className="rounded-full bg-white px-2.5 py-0.5 text-xs font-semibold text-muted ring-1 ring-line">
                 “{sp.q}” · {numberFormat.format(list.total)} sonuç
@@ -171,12 +204,26 @@ async function CategoryTable({ searchParams }: { searchParams: PageProps<"/admin
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left">
+            <table className="w-full min-w-[980px] text-left">
               <thead>
                 <tr className="border-b border-line bg-gradient-to-b from-canvas to-white text-xs font-bold tracking-wide text-muted uppercase">
-                  <th className="px-5 py-3.5 w-[120px]">ID</th>
-                  <th className="px-5 py-3.5">Kategori</th>
-                  <th className="px-5 py-3.5 w-[100px]">Tür</th>
+                  <th className="px-5 py-3.5 w-[108px]">ID</th>
+                  <th className="min-w-[200px] px-5 py-3.5">Kategori</th>
+                  <th className="px-5 py-3.5 w-[88px]">Tür</th>
+                  <th className="px-3 py-3.5 w-[76px] text-right" title="Komisyon oranı">
+                    Komisyon
+                  </th>
+                  <th className="px-3 py-3.5 w-[76px] text-right" title="KDV oranı">
+                    KDV
+                  </th>
+                  <th className="px-3 py-3.5 w-[88px] text-right leading-snug normal-case">
+                    Pazarlama
+                    <span className="block text-[10px] font-semibold text-subtle">bedeli</span>
+                  </th>
+                  <th className="px-3 py-3.5 w-[88px] text-right leading-snug normal-case">
+                    Pazaryeri
+                    <span className="block text-[10px] font-semibold text-subtle">hizmet bedeli</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -214,6 +261,10 @@ async function CategoryTable({ searchParams }: { searchParams: PageProps<"/admin
                         {row.isLeaf ? "Yaprak" : "Dal"}
                       </span>
                     </td>
+                    <CategoryFeeColumns
+                      categoryId={row.id}
+                      initial={feePercentsForRow(categoryFees.get(row.id) ?? emptyFees)}
+                    />
                   </tr>
                 ))}
               </tbody>

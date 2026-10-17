@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { hasMarketplaceLogo, MarketplaceLogo } from "./marketplace-logo";
 import { styleForMarketplace } from "./marketplace-style";
 
 type Props = {
@@ -25,15 +26,25 @@ export function CategoryFilters({ marketplaces, currentMarketplaceId, q }: Props
               <Link
                 key={mp.id}
                 href={href}
+                aria-label={mp.name}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-semibold transition-all",
+                  "inline-flex items-center gap-2 rounded-full border px-3.5 py-2.5 text-sm font-semibold transition-all",
                   active
                     ? cn(accent.tab, "scale-[1.02]")
                     : "border-line bg-white text-ink-soft hover:border-ink-soft/25 hover:bg-canvas hover:text-ink",
                 )}
               >
-                <span className={cn("size-2 shrink-0 rounded-full", active ? accent.dot : "bg-line")} aria-hidden />
-                {mp.name}
+                {hasMarketplaceLogo(mp.id) ? (
+                  <MarketplaceLogo
+                    marketplaceId={mp.id}
+                    className={cn(!active && "opacity-40 saturate-0")}
+                  />
+                ) : (
+                  <>
+                    <span className={cn("size-2 shrink-0 rounded-full", active ? accent.dot : "bg-line")} aria-hidden />
+                    {mp.name}
+                  </>
+                )}
               </Link>
             );
           })}

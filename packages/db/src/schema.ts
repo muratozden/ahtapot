@@ -6,6 +6,7 @@ import {
   index,
   inet,
   integer,
+  date,
   numeric,
   pgEnum,
   pgTable,
@@ -129,6 +130,31 @@ export const marketplaceCategories = pgTable(
     uniqueIndex("marketplace_categories_mp_ext_ver_uq").on(t.marketplaceId, t.externalId, t.treeVersion),
     index("marketplace_categories_mp_parent_idx").on(t.marketplaceId, t.parentId),
     index("marketplace_categories_mp_ver_idx").on(t.marketplaceId, t.treeVersion),
+  ],
+);
+
+/** Open row per category (effective_to IS NULL): commission and fee rates as decimals (0.15 = 15%). */
+export const categoryCommissionRates = pgTable(
+  "category_commission_rates",
+  {
+    id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+    categoryId: bigint("category_id", { mode: "number" })
+      .notNull()
+      .references(() => marketplaceCategories.id, { onDelete: "cascade" }),
+    rate: numeric("rate", { precision: 6, scale: 4 }),
+    vatRate: numeric("vat_rate", { precision: 6, scale: 4 }),
+    marketingFeeRate: numeric("marketing_fee_rate", { precision: 6, scale: 4 }),
+    marketplaceServiceFeeRate: numeric("marketplace_service_fee_rate", { precision: 6, scale: 4 }),
+    effectiveFrom: date("effective_from").notNull().defaultNow(),
+    effectiveTo: date("effective_to"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("category_commission_rates_category_idx").on(t.categoryId),
+    uniqueIndex("category_commission_rates_open_uq")
+      .on(t.categoryId)
+      .where(sql`${t.effectiveTo} is null`),
   ],
 );
 
