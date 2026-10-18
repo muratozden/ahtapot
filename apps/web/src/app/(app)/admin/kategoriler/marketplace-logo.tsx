@@ -6,6 +6,7 @@ const marketplaceLogos: Record<string, { src: string; width: number; height: num
   n11: { src: "/platform/n11.svg", width: 36, height: 12 },
   hepsiburada: { src: "/platform/hepsiburada.svg", width: 71, height: 13 },
   amazon_tr: { src: "/platform/amazon.svg", width: 68, height: 15 },
+  pttavm: { src: "/platform/pttavm.svg", width: 48, height: 12 },
 };
 
 type Props = {

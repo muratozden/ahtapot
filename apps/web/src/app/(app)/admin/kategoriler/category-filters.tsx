@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { hasMarketplaceLogo, MarketplaceLogo } from "./marketplace-logo";
+import { CategoryBulkFeePanel } from "./category-bulk-fee-panel";
 import { styleForMarketplace } from "./marketplace-style";
 
 type Props = {
@@ -78,6 +79,7 @@ export function CategoryFilters({ marketplaces, currentMarketplaceId, q }: Props
           Ara
         </button>
       </form>
+      <CategoryBulkFeePanel marketplaceId={currentMarketplaceId} />
     </section>
   );
 }

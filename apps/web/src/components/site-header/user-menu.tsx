@@ -42,7 +42,7 @@ export function UserMenu({ user }: { user: CurrentUser }) {
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger
         aria-label="Hesap menüsü"
-        className="relative grid size-10 place-items-center rounded-full bg-gradient-to-br from-brand to-[#7b3fe4] text-sm font-bold text-white outline-none ring-offset-2 transition-shadow hover:ring-2 hover:ring-line focus-visible:ring-2 focus-visible:ring-brand/40 data-[state=open]:ring-2 data-[state=open]:ring-line"
+        className="relative grid size-10 place-items-center rounded-full bg-gradient-to-br from-brand to-brand-dark text-sm font-bold text-white outline-none ring-offset-2 transition-shadow hover:ring-2 hover:ring-line focus-visible:ring-2 focus-visible:ring-brand/40 data-[state=open]:ring-2 data-[state=open]:ring-line"
       >
         {initialsOf(user.name)}
       </DropdownMenu.Trigger>

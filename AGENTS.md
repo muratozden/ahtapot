@@ -85,7 +85,7 @@ npm run dev:web       # http://localhost:3000
 | `npm run infra:down` | Docker container'larını durdurur (veri volume'da kalır) |
 | `npm run db:generate` | Şema değişikliğinden yeni migration üretir |
 | `npm run db:migrate` | Bekleyen migration'ları uygular |
-| `npm run db:import-categories` | `_temp/category.sql` içinden n11 / Trendyol / Hepsiburada kategori ağaçlarını yükler |
+| `npm run db:import-categories` | `_temp/category.sql` + varsa `_temp/pttavm-categories.sql` kategori ağaçlarını yükler |
 | `npm run studio -w @ahtapot/db` | Drizzle Studio (veritabanı arayüzü) |
 | `npm run build:web` | Production build (dev sunucusu açıkken çalıştırma) |
 | `npm run lint -w @ahtapot/web` | ESLint |
@@ -143,17 +143,18 @@ Kod yazmadan önce `node_modules/next/dist/docs/` altındaki ilgili rehberi oku 
 - Komisyon ve oranlar: `category_commission_rates` (komisyon, KDV, pazarlama bedeli, pazaryeri hizmet bedeli — hepsi % olarak; admin `/admin/kategoriler`).
 - Listing: `listings.marketplace_category_id` + yedek `category_external_id`, `category_path` (çekim anı).
 - Satıcı giderleri: `tracked_listing_economics` (ürün maliyeti, kargo, diğer, isteğe bağlı komisyon override).
-- Import: n11 / Trendyol `_temp/category.sql` içindeki `*_categories` tabloları; attribute ve marka tabloları alınmaz. Hepsiburada ağacı eksikse aynı şemaya farklı kaynakla `tree_version` değiştirilerek yeniden yüklenir.
+- Import: `npm run db:import-categories` — n11 / Trendyol / Hepsiburada `_temp/category.sql` (COPY); **PTT AVM** `_temp/pttavm-categories.sql` (INSERT, dosya varsa otomatik). PTT dump’ta bazı `id` değerleri tekrar ettiği için `external_id` biçimi `{parentId}:{id}` (kök için `0:{id}`); ürün parser’ı eşleştirirken parent id veya `category_path` kullanılmalı.
+- Pazaryerleri seed: Trendyol, n11, Hepsiburada, Amazon TR (`0001`); PTT AVM (`0005`, `pttavm.com.tr`).
 - Çapraz platform eşleştirme (`product_groups`) buybox sonrası ayrı adım.
 
 ## Tasarım
 
 - Font: Google Sans (`next/font/google`). Body yazı boyutu 13px. Arama kutusu ve nav butonları da 13px.
 - Renkler `apps/web/src/app/globals.css` içindeki `@theme` bloğunda.
-  - Marka rengi `--color-brand: #1c1c1e` (Murat değiştirdi).
-  - Metin ve nötrler: ink `#0d0c22`, muted `#6e6d7a`, line `#e7e7e9`, canvas `#fafafb`.
-  - Durum renkleri: drop yeşil, rise kırmızı.
-  - `brand-dark`, `brand-soft`, arama odak halkası ve avatar gradyanı eski pembe tonlarda kaldı. Yeni marka rengine uyarlanması önerildi ama henüz istenmedi.
+  - Marka / birincil aksiyon: `--color-brand` siyah `#000000`, hover `#262626`.
+  - Zemin: canvas `#f5f7f9`, kartlar beyaz, yüzey/input `#edf2f7`, border `#e5e7eb` (gölge ağırlıklı kartlar).
+  - Metin: ink `#0a0a0b`, muted `#6b7280`.
+  - Durum: drop mint (`#065f46` / `#d1fae5`), rise kırmızı; `brand-soft` lavanta `#f3e8ff` (rozet vb.).
 - Logo: `public/logo-ahtapot.svg` (1069×266, siyah).
 - Kartlar: `rounded-2xl border border-line bg-white shadow-card`. Ana buton: `bg-brand text-white` (header'da `rounded-full`, formlarda `rounded-xl`).
 - Ortak form parçaları: `components/auth/form-parts.tsx` (`Field`, `FormError`, `SubmitButton`).

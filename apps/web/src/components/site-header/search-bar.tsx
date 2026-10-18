@@ -41,7 +41,7 @@ export function SearchBar({ className }: { className?: string }) {
       }}
       className={cn(
         "group flex h-12 items-center rounded-full border border-transparent bg-surface pr-1 pl-6 transition-[background-color,border-color,box-shadow]",
-        "hover:border-line hover:bg-white focus-within:border-brand/40 focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgb(234_76_137/0.1)]",
+        "hover:border-line hover:bg-white focus-within:border-line focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgb(0_0_0/0.06)]",
         className,
       )}
     >

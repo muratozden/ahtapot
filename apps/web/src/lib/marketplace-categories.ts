@@ -81,3 +81,92 @@ export async function listMarketplaceCategories({ marketplaceId, q, page = 1 }: 
 
   return { rows, total, page: safePage, pageCount, pageSize: PAGE_SIZE };
 }
+
+export type CategoryPickerRow = {
+  id: number;
+  name: string;
+  path: string;
+  isLeaf: boolean;
+};
+
+export type BulkFeeScope = "self" | "subtree";
+
+const categoryPickerColumns = {
+  id: marketplaceCategories.id,
+  name: marketplaceCategories.name,
+  path: marketplaceCategories.path,
+  isLeaf: marketplaceCategories.isLeaf,
+  marketplaceId: marketplaceCategories.marketplaceId,
+};
+
+export async function searchCategoriesForPicker(marketplaceId: string, q: string, limit = 12): Promise<CategoryPickerRow[]> {
+  await requireRole("admin");
+  await connection();
+
+  const term = q.trim();
+  if (term.length < 2) return [];
+
+  const base = and(
+    eq(marketplaceCategories.marketplaceId, marketplaceId),
+    eq(marketplaceCategories.treeVersion, MARKETPLACE_CATEGORY_TREE_VERSION),
+    or(ilike(marketplaceCategories.path, `%${term}%`), ilike(marketplaceCategories.name, `%${term}%`)),
+  );
+
+  return db
+    .select({
+      id: categoryPickerColumns.id,
+      name: categoryPickerColumns.name,
+      path: categoryPickerColumns.path,
+      isLeaf: categoryPickerColumns.isLeaf,
+    })
+    .from(marketplaceCategories)
+    .where(base)
+    .orderBy(marketplaceCategories.path)
+    .limit(limit);
+}
+
+export async function resolveBulkFeeTargetIds(categoryId: number, scope: BulkFeeScope, leavesOnly: boolean) {
+  await requireRole("admin");
+  await connection();
+
+  const [anchor] = await db
+    .select({
+      id: categoryPickerColumns.id,
+      path: categoryPickerColumns.path,
+      isLeaf: categoryPickerColumns.isLeaf,
+      marketplaceId: categoryPickerColumns.marketplaceId,
+    })
+    .from(marketplaceCategories)
+    .where(
+      and(
+        eq(marketplaceCategories.id, categoryId),
+        eq(marketplaceCategories.treeVersion, MARKETPLACE_CATEGORY_TREE_VERSION),
+      ),
+    );
+
+  if (!anchor) return [];
+
+  if (scope === "self") {
+    if (leavesOnly && !anchor.isLeaf) return [];
+    return [anchor.id];
+  }
+
+  const pathPrefix = `${anchor.path} > %`;
+  const treeFilter = or(eq(marketplaceCategories.path, anchor.path), ilike(marketplaceCategories.path, pathPrefix));
+
+  const where = leavesOnly
+    ? and(
+        eq(marketplaceCategories.marketplaceId, anchor.marketplaceId),
+        eq(marketplaceCategories.treeVersion, MARKETPLACE_CATEGORY_TREE_VERSION),
+        treeFilter,
+        eq(marketplaceCategories.isLeaf, true),
+      )
+    : and(
+        eq(marketplaceCategories.marketplaceId, anchor.marketplaceId),
+        eq(marketplaceCategories.treeVersion, MARKETPLACE_CATEGORY_TREE_VERSION),
+        treeFilter,
+      );
+
+  const rows = await db.select({ id: marketplaceCategories.id }).from(marketplaceCategories).where(where);
+  return rows.map((r) => r.id);
+}

@@ -195,12 +195,11 @@ async function CategoryTable({ searchParams }: { searchParams: PageProps<"/admin
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] text-left">
+            <table className="w-full min-w-[880px] text-left">
               <thead>
                 <tr className="border-b border-line bg-gradient-to-b from-canvas to-white text-xs font-bold tracking-wide text-muted uppercase">
                   <th className="px-5 py-3.5 w-[108px]">ID</th>
                   <th className="min-w-[200px] px-5 py-3.5">Kategori</th>
-                  <th className="px-5 py-3.5 w-[88px]">Tür</th>
                   <th className="px-3 py-3.5 w-[76px] text-right" title="Komisyon oranı">
                     Komisyon
                   </th>
@@ -239,18 +238,6 @@ async function CategoryTable({ searchParams }: { searchParams: PageProps<"/admin
                     <td className="px-5 py-4 align-top">
                       <span className="font-semibold text-ink">{row.name}</span>
                       <PathTrail path={row.path} />
-                    </td>
-                    <td className="px-5 py-4 align-top">
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold",
-                          row.isLeaf
-                            ? "bg-drop-soft text-drop ring-1 ring-drop/15"
-                            : "bg-surface text-muted ring-1 ring-line",
-                        )}
-                      >
-                        {row.isLeaf ? "Yaprak" : "Dal"}
-                      </span>
                     </td>
                     <CategoryFeeColumns
                       categoryId={row.id}

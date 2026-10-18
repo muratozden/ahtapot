@@ -36,6 +36,13 @@
       "when": 1792240189503,
       "tag": "0004_special_komodo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792260000000,
+      "tag": "0005_pttavm_marketplace",
+      "breakpoints": true
     }
   ]
 }
