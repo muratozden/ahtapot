@@ -146,8 +146,8 @@ Kod yazmadan önce `node_modules/next/dist/docs/` altındaki ilgili rehberi oku 
 - Listing: `listings.marketplace_category_id` + yedek `category_external_id`, `category_path` (çekim anı).
 - Pazaryeri mağazaları: `marketplace_sellers` (pazaryeri + `external_seller_id` tekil; mağaza URL, ticari ünvan, adres, MERSİS, vergi no, telefon, ort. kargo/mesaj süresi, puan, ürün sayısı).
 - Satıcı giderleri: `tracked_listing_economics` (ürün maliyeti, kargo, diğer, isteğe bağlı komisyon override).
-- Import: `npm run db:import-categories` — n11 / Trendyol / Hepsiburada `_temp/category.sql` (COPY); **PTT AVM** `_temp/pttavm-categories.sql` (INSERT); **Idefix** `_temp/idefix_categories.xlsx` (yaprak `id` + `categoryPath`, ara dallar `b:{hash}`). PTT: `external_id` = `{parentId}:{id}`.
-- Pazaryerleri seed: Trendyol, n11, Hepsiburada, Amazon TR (`0001`); PTT AVM (`0005`); Idefix (`0007`, `idefix.com`).
+- Import: `npm run db:import-categories` — n11 / Trendyol / Hepsiburada `_temp/category.sql` (COPY); **PTT AVM** `_temp/pttavm-categories.sql` (INSERT); **Idefix** `_temp/idefix_categories.xlsx` (yaprak `id` + `categoryPath`, ara dallar `b:{hash}`); **Pazarama** `_temp/pazarama.sql` (`pazarama_categories` COPY, UUID `external_id`). PTT: `external_id` = `{parentId}:{id}`.
+- Pazaryerleri seed: Trendyol, n11, Hepsiburada, Amazon TR (`0001`); PTT AVM (`0005`); Idefix (`0007`); Pazarama (`0008`, `pazarama.com`).
 - Çapraz platform eşleştirme (`product_groups`) buybox sonrası ayrı adım.
 
 ## Tasarım

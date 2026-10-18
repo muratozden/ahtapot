@@ -6,6 +6,7 @@ export const MARKETPLACE_DISPLAY_ORDER = [
   "amazon_tr",
   "pttavm",
   "idefix",
+  "pazarama",
 ] as const;
 
 export function sortMarketplacesByDisplayOrder<T extends { id: string; name: string }>(items: T[]): T[] {

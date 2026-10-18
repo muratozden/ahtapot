@@ -8,6 +8,7 @@ const marketplaceLogos: Record<string, { src: string; width: number; height: num
   amazon_tr: { src: "/platform/amazon.svg", width: 68, height: 15 },
   pttavm: { src: "/platform/pttavm.svg", width: 48, height: 12 },
   idefix: { src: "/platform/idefix.svg", width: 48, height: 25, displayClass: "h-[18px]" },
+  pazarama: { src: "/platform/pazarama.svg", width: 68, height: 14 },
 };
 
 type Props = {

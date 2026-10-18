@@ -43,6 +43,12 @@ export const marketplaceStyle: Record<string, MarketplaceStyle> = {
     dot: "bg-rise",
     icon: "bg-rise-soft text-rise",
   },
+  pazarama: {
+    label: "Pazarama",
+    tab: "border-brand-soft bg-brand-soft text-ink shadow-[inset_0_0_0_1px_rgb(0_0_0/0.06)]",
+    dot: "bg-brand",
+    icon: "bg-brand-soft text-ink",
+  },
 };
 
 export function styleForMarketplace(id: string): MarketplaceStyle {

@@ -35,6 +35,7 @@ const { values: args } = parseArgs({
     file: { type: "string", default: resolve(repoRoot, "_temp/category.sql") },
     pttavmFile: { type: "string", default: resolve(repoRoot, "_temp/pttavm-categories.sql") },
     idefixFile: { type: "string", default: resolve(repoRoot, "_temp/idefix_categories.xlsx") },
+    pazaramaFile: { type: "string", default: resolve(repoRoot, "_temp/pazarama.sql") },
     version: { type: "string", default: MARKETPLACE_CATEGORY_TREE_VERSION },
   },
 });
@@ -74,6 +75,36 @@ async function parseCopySection(file: string, marker: string): Promise<RawRow[]>
 
 const PTT_INSERT_RE =
   /INSERT INTO public\.pttavm_categories VALUES \((\d+), (\d+), (NULL|\d+), '((?:[^']|'')*)', '((?:[^']|'')*)', (true|false)\);/g;
+
+const PAZARAMA_COPY_MARKER = "COPY public.pazarama_categories ";
+
+/** Pazarama pg_dump: sequence, id, parentId, name, nameTree, isLeaf (UUID ids). */
+async function parsePazaramaCategoriesCopy(file: string): Promise<RawRow[]> {
+  const rows: RawRow[] = [];
+  const rl = createInterface({ input: createReadStream(file, { encoding: "utf8" }), crlfDelay: Infinity });
+  let inSection = false;
+
+  for await (const line of rl) {
+    if (!inSection) {
+      if (line.startsWith(PAZARAMA_COPY_MARKER)) inSection = true;
+      continue;
+    }
+    if (line === "\\.") break;
+    const parts = line.split("\t");
+    if (parts.length < 6) continue;
+    const [, externalId, parentId, name, path, isLeaf] = parts;
+    if (!externalId || !name || !path) continue;
+    rows.push({
+      externalId,
+      parentExternalId: parentId === "\\N" ? null : parentId,
+      name,
+      path,
+      isLeaf: isLeaf === "t",
+    });
+  }
+
+  return rows;
+}
 
 async function parsePttavmInserts(file: string): Promise<RawRow[]> {
   const rl = createInterface({ input: createReadStream(file, { encoding: "utf8" }), crlfDelay: Infinity });
@@ -293,6 +324,21 @@ async function main() {
     }
   } else {
     console.warn(`  idefix: skipped (${idefixFile} not found)`);
+  }
+
+  const pazaramaFile = args.pazaramaFile!;
+  if (await fileExists(pazaramaFile)) {
+    const rows = await parsePazaramaCategoriesCopy(pazaramaFile);
+    if (rows.length === 0) {
+      console.warn(`  pazarama: no rows in ${pazaramaFile}`);
+    } else {
+      const stats = await importMarketplace(db, "pazarama", rows, version);
+      console.log(
+        `  pazarama: ${stats.total} categories, ${stats.linkedParents} parent links, ${stats.orphans} rows with missing parent id in dump`,
+      );
+    }
+  } else {
+    console.warn(`  pazarama: skipped (${pazaramaFile} not found)`);
   }
 
   console.log("Done.");
