@@ -13,6 +13,7 @@
     "db:generate": "npm run generate -w @ahtapot/db",
     "db:migrate": "npm run migrate -w @ahtapot/db",
     "db:import-categories": "node --env-file=.env packages/db/scripts/import-categories.mts",
+    "db:bulk-set-marketplace-fees": "node --env-file=.env packages/db/scripts/bulk-set-marketplace-fees.mts",
     "deploy": "bash scripts/deploy.sh"
   }
 }

@@ -87,6 +87,7 @@ npm run dev:web       # http://localhost:3000
 | `npm run db:generate` | Şema değişikliğinden yeni migration üretir |
 | `npm run db:migrate` | Bekleyen migration'ları uygular |
 | `npm run db:import-categories` | `_temp/category.sql` + varsa `_temp/pttavm-categories.sql` kategori ağaçlarını yükler |
+| `npm run db:bulk-set-marketplace-fees` | Pazaryeri genelinde komisyon/bedel (--marketplace, --marketing, --marketplace-service, vb.) |
 | `npm run studio -w @ahtapot/db` | Drizzle Studio (veritabanı arayüzü) |
 | `npm run build:web` | Production build (dev sunucusu açıkken çalıştırma) |
 | `npm run lint -w @ahtapot/web` | ESLint |
