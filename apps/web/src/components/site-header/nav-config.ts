@@ -12,6 +12,7 @@ import {
   Link2,
   Package,
   Send,
+  ShoppingBag,
   Sparkles,
   Store,
   Tags,
@@ -166,9 +167,15 @@ export const adminNavGroup: NavGroup = {
     },
     {
       title: "Satıcılar",
-      description: "Satıcı hesaplarını ekle ve düzenle",
+      description: "Ahtapot satıcı hesaplarını ekle ve düzenle",
       href: "/admin/saticilar",
       icon: Store,
+    },
+    {
+      title: "Pazaryeri satıcıları",
+      description: "Pazaryeri mağaza profilleri ve iletişim bilgileri",
+      href: "/admin/pazaryeri-saticilar",
+      icon: ShoppingBag,
     },
     {
       title: "Kategoriler",

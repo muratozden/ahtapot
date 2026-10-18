@@ -37,6 +37,12 @@ export const marketplaceStyle: Record<string, MarketplaceStyle> = {
     dot: "bg-[#fbbf24]",
     icon: "bg-[#fef3c7] text-[#92400e]",
   },
+  idefix: {
+    label: "Idefix",
+    tab: "border-rise/20 bg-rise-soft text-rise shadow-[inset_0_0_0_1px_rgb(185_28_28/0.08)]",
+    dot: "bg-rise",
+    icon: "bg-rise-soft text-rise",
+  },
 };
 
 export function styleForMarketplace(id: string): MarketplaceStyle {

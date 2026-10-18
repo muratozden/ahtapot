@@ -109,6 +109,37 @@ export const marketplaces = pgTable("marketplaces", {
   minDelayMs: integer("min_delay_ms").notNull().default(5000),
 });
 
+/** Seller profile on a marketplace (store page data from scrapers). */
+export const marketplaceSellers = pgTable(
+  "marketplace_sellers",
+  {
+    id: bigint("id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+    marketplaceId: text("marketplace_id")
+      .notNull()
+      .references(() => marketplaces.id),
+    externalSellerId: text("external_seller_id").notNull(),
+    storeName: text("store_name"),
+    storeUrl: text("store_url"),
+    commercialTitle: text("commercial_title"),
+    location: text("location"),
+    address: text("address"),
+    mersisNo: text("mersis_no"),
+    taxId: text("tax_id"),
+    phone: text("phone"),
+    avgShippingDays: numeric("avg_shipping_days", { precision: 8, scale: 2 }),
+    avgMessageResponseHours: numeric("avg_message_response_hours", { precision: 8, scale: 2 }),
+    rating: numeric("rating", { precision: 4, scale: 2 }),
+    productCount: integer("product_count"),
+    lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    uniqueIndex("marketplace_sellers_mp_ext_uq").on(t.marketplaceId, t.externalSellerId),
+    index("marketplace_sellers_mp_idx").on(t.marketplaceId),
+  ],
+);
+
 /** Marketplace category trees (imported reference data for commission mapping). */
 export const marketplaceCategories = pgTable(
   "marketplace_categories",

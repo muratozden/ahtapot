@@ -41,6 +41,7 @@ Kararlar: Admin gezinmesi ana header'daki **"Yönetim"** dropdown'ı ile yapıl�
 |---|---|---|---|
 | 1 | Yönetim menüsü ve Genel bakış | `/admin` | Tamam |
 | 2 | Satıcı detayı ve pasife alma | `/admin/saticilar/[id]` | Bekliyor (liste, ekleme, düzenleme var) |
+| — | Pazaryeri mağaza profilleri (liste) | `/admin/pazaryeri-saticilar` | Tamam (veri scraper ile gelecek) |
 | 3 | Pazaryerleri ayarları | `/admin/pazaryerleri` | Bekliyor |
 | 4 | Eklentiler (token yönetimi) | `/admin/eklentiler` | Bekliyor |
 | 5 | İş kuyruğu ve hatalar | `/admin/kuyruk` | Veri toplama ile birlikte |
@@ -142,9 +143,10 @@ Kod yazmadan önce `node_modules/next/dist/docs/` altındaki ilgili rehberi oku 
 - Referans: `marketplace_categories` (pazaryeri başına harici `external_id`, iç `id`, `parent_id`, `path`, `is_leaf`, `tree_version`).
 - Komisyon ve oranlar: `category_commission_rates` (komisyon, KDV, pazarlama bedeli, pazaryeri hizmet bedeli — hepsi % olarak; admin `/admin/kategoriler`).
 - Listing: `listings.marketplace_category_id` + yedek `category_external_id`, `category_path` (çekim anı).
+- Pazaryeri mağazaları: `marketplace_sellers` (pazaryeri + `external_seller_id` tekil; mağaza URL, ticari ünvan, adres, MERSİS, vergi no, telefon, ort. kargo/mesaj süresi, puan, ürün sayısı).
 - Satıcı giderleri: `tracked_listing_economics` (ürün maliyeti, kargo, diğer, isteğe bağlı komisyon override).
-- Import: `npm run db:import-categories` — n11 / Trendyol / Hepsiburada `_temp/category.sql` (COPY); **PTT AVM** `_temp/pttavm-categories.sql` (INSERT, dosya varsa otomatik). PTT dump’ta bazı `id` değerleri tekrar ettiği için `external_id` biçimi `{parentId}:{id}` (kök için `0:{id}`); ürün parser’ı eşleştirirken parent id veya `category_path` kullanılmalı.
-- Pazaryerleri seed: Trendyol, n11, Hepsiburada, Amazon TR (`0001`); PTT AVM (`0005`, `pttavm.com.tr`).
+- Import: `npm run db:import-categories` — n11 / Trendyol / Hepsiburada `_temp/category.sql` (COPY); **PTT AVM** `_temp/pttavm-categories.sql` (INSERT); **Idefix** `_temp/idefix_categories.xlsx` (yaprak `id` + `categoryPath`, ara dallar `b:{hash}`). PTT: `external_id` = `{parentId}:{id}`.
+- Pazaryerleri seed: Trendyol, n11, Hepsiburada, Amazon TR (`0001`); PTT AVM (`0005`); Idefix (`0007`, `idefix.com`).
 - Çapraz platform eşleştirme (`product_groups`) buybox sonrası ayrı adım.
 
 ## Tasarım

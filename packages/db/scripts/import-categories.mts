@@ -1,8 +1,10 @@
+import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { access } from "node:fs/promises";
 import { createInterface } from "node:readline";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
+import XLSX from "xlsx";
 import { and, eq } from "drizzle-orm";
 import { createDb, schema } from "../src/index.ts";
 import { MARKETPLACE_CATEGORY_TREE_VERSION } from "../src/category-tree-version.ts";
@@ -32,6 +34,7 @@ const { values: args } = parseArgs({
   options: {
     file: { type: "string", default: resolve(repoRoot, "_temp/category.sql") },
     pttavmFile: { type: "string", default: resolve(repoRoot, "_temp/pttavm-categories.sql") },
+    idefixFile: { type: "string", default: resolve(repoRoot, "_temp/idefix_categories.xlsx") },
     version: { type: "string", default: MARKETPLACE_CATEGORY_TREE_VERSION },
   },
 });
@@ -110,6 +113,69 @@ async function parsePttavmInserts(file: string): Promise<RawRow[]> {
       isLeaf: row.isLeaf,
     };
   });
+}
+
+function idefixBranchExternalId(path: string) {
+  return `b:${createHash("sha256").update(path).digest("hex").slice(0, 16)}`;
+}
+
+/** Idefix export: leaf rows with id + categoryPath; branch nodes get stable hashed external_id. */
+function parseIdefixXlsx(file: string): RawRow[] {
+  const wb = XLSX.readFile(file);
+  const sheetName = wb.SheetNames[0];
+  if (!sheetName) return [];
+  const sheet = wb.Sheets[sheetName]!;
+  const data = XLSX.utils.sheet_to_json<{ id: number | string; name: string; categoryPath: string }>(sheet);
+
+  type Node = {
+    name: string;
+    path: string;
+    externalId: string;
+    isLeaf: boolean;
+    parentPath: string | null;
+  };
+  const nodeByPath = new Map<string, Node>();
+
+  for (const row of data) {
+    const path = String(row.categoryPath ?? "").trim();
+    if (!path) continue;
+    const parts = path
+      .split(" > ")
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (parts.length === 0) continue;
+    const leafName = String(row.name ?? parts[parts.length - 1] ?? "").trim();
+    const leafId = String(row.id).trim();
+
+    for (let i = 0; i < parts.length; i++) {
+      const subPath = parts.slice(0, i + 1).join(" > ");
+      if (nodeByPath.has(subPath)) continue;
+      const isLeaf = i === parts.length - 1;
+      nodeByPath.set(subPath, {
+        name: isLeaf ? leafName : parts[i]!,
+        path: subPath,
+        externalId: isLeaf ? leafId : idefixBranchExternalId(subPath),
+        isLeaf,
+        parentPath: i === 0 ? null : parts.slice(0, i).join(" > "),
+      });
+    }
+
+    nodeByPath.set(path, {
+      name: leafName,
+      path,
+      externalId: leafId,
+      isLeaf: true,
+      parentPath: parts.length > 1 ? parts.slice(0, -1).join(" > ") : null,
+    });
+  }
+
+  return [...nodeByPath.values()].map((n) => ({
+    externalId: n.externalId,
+    parentExternalId: n.parentPath ? (nodeByPath.get(n.parentPath)?.externalId ?? null) : null,
+    name: n.name,
+    path: n.path,
+    isLeaf: n.isLeaf,
+  }));
 }
 
 async function importMarketplace(
@@ -212,6 +278,21 @@ async function main() {
     }
   } else {
     console.warn(`  pttavm: skipped (${pttavmFile} not found)`);
+  }
+
+  const idefixFile = args.idefixFile!;
+  if (await fileExists(idefixFile)) {
+    const rows = parseIdefixXlsx(idefixFile);
+    if (rows.length === 0) {
+      console.warn(`  idefix: no rows in ${idefixFile}`);
+    } else {
+      const stats = await importMarketplace(db, "idefix", rows, version);
+      console.log(
+        `  idefix: ${stats.total} categories, ${stats.linkedParents} parent links, ${stats.orphans} rows with missing parent id in dump`,
+      );
+    }
+  } else {
+    console.warn(`  idefix: skipped (${idefixFile} not found)`);
   }
 
   console.log("Done.");

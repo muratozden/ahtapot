@@ -3,6 +3,7 @@ import { schema, MARKETPLACE_CATEGORY_TREE_VERSION } from "@ahtapot/db";
 import { and, count, desc, eq, ilike, or } from "drizzle-orm";
 import { connection } from "next/server";
 import { db } from "./db";
+import { sortMarketplacesByDisplayOrder } from "./marketplace-display-order";
 import { requireRole } from "./session";
 
 const { marketplaceCategories, marketplaces } = schema;
@@ -18,10 +19,8 @@ export type CategoryListParams = {
 export async function listMarketplacesForCategories() {
   await requireRole("admin");
   await connection();
-  return db
-    .select({ id: marketplaces.id, name: marketplaces.name })
-    .from(marketplaces)
-    .orderBy(marketplaces.name);
+  const rows = await db.select({ id: marketplaces.id, name: marketplaces.name }).from(marketplaces);
+  return sortMarketplacesByDisplayOrder(rows);
 }
 
 export async function getCategoryListSummary(marketplaceId: string) {
