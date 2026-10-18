@@ -1,8 +1,6 @@
 import { parseArgs } from "node:util";
-import { and, eq, isNull } from "drizzle-orm";
-import { createDb, MARKETPLACE_CATEGORY_TREE_VERSION, schema } from "../src/index.ts";
-
-const { marketplaceCategories, categoryCommissionRates } = schema;
+import { sql } from "drizzle-orm";
+import { createDb, MARKETPLACE_CATEGORY_TREE_VERSION } from "../src/index.ts";
 
 function toStoredRate(percent: number) {
   return (percent / 100).toFixed(4);
@@ -49,60 +47,70 @@ async function main() {
   const treeVersion = args.version!;
   const db = createDb();
 
-  const categories = await db
-    .select({ id: marketplaceCategories.id })
-    .from(marketplaceCategories)
-    .where(
-      and(eq(marketplaceCategories.marketplaceId, marketplaceId), eq(marketplaceCategories.treeVersion, treeVersion)),
-    );
+  const updateSets: ReturnType<typeof sql>[] = [sql`updated_at = NOW()`];
+  const insertCols: ReturnType<typeof sql>[] = [sql`category_id`];
+  const insertVals: ReturnType<typeof sql>[] = [sql`mc.id`];
 
-  if (categories.length === 0) {
-    console.warn(`No categories for marketplace=${marketplaceId} tree_version=${treeVersion}`);
-    await db.$client.end();
-    return;
+  if (patch.marketing !== undefined) {
+    const v = toStoredRate(patch.marketing);
+    updateSets.push(sql`marketing_fee_rate = ${v}`);
+    insertCols.push(sql`marketing_fee_rate`);
+    insertVals.push(sql`${v}`);
+  }
+  if (patch.marketplaceService !== undefined) {
+    const v = toStoredRate(patch.marketplaceService);
+    updateSets.push(sql`marketplace_service_fee_rate = ${v}`);
+    insertCols.push(sql`marketplace_service_fee_rate`);
+    insertVals.push(sql`${v}`);
+  }
+  if (patch.commission !== undefined) {
+    const v = toStoredRate(patch.commission);
+    updateSets.push(sql`rate = ${v}`);
+    insertCols.push(sql`rate`);
+    insertVals.push(sql`${v}`);
+  }
+  if (patch.vat !== undefined) {
+    const v = toStoredRate(patch.vat);
+    updateSets.push(sql`vat_rate = ${v}`);
+    insertCols.push(sql`vat_rate`);
+    insertVals.push(sql`${v}`);
   }
 
-  const marketingRate = patch.marketing !== undefined ? toStoredRate(patch.marketing) : null;
-  const marketplaceServiceRate =
-    patch.marketplaceService !== undefined ? toStoredRate(patch.marketplaceService) : null;
-  const commissionRate = patch.commission !== undefined ? toStoredRate(patch.commission) : null;
-  const vatRate = patch.vat !== undefined ? toStoredRate(patch.vat) : null;
-
-  let updated = 0;
-  let inserted = 0;
-
   await db.transaction(async (tx) => {
-    for (const { id: categoryId } of categories) {
-      const open = await tx
-        .select({ id: categoryCommissionRates.id })
-        .from(categoryCommissionRates)
-        .where(and(eq(categoryCommissionRates.categoryId, categoryId), isNull(categoryCommissionRates.effectiveTo)))
-        .limit(1);
+    await tx.execute(sql`
+      UPDATE category_commission_rates ccr
+      SET ${sql.join(updateSets, sql`, `)}
+      FROM marketplace_categories mc
+      WHERE ccr.category_id = mc.id
+        AND mc.marketplace_id = ${marketplaceId}
+        AND mc.tree_version = ${treeVersion}
+        AND ccr.effective_to IS NULL
+    `);
 
-      const setParts: Record<string, string | null> = {};
-      if (marketingRate !== null) setParts.marketingFeeRate = marketingRate;
-      if (marketplaceServiceRate !== null) setParts.marketplaceServiceFeeRate = marketplaceServiceRate;
-      if (commissionRate !== null) setParts.rate = commissionRate;
-      if (vatRate !== null) setParts.vatRate = vatRate;
-
-      if (open[0]) {
-        await tx.update(categoryCommissionRates).set(setParts).where(eq(categoryCommissionRates.id, open[0].id));
-        updated++;
-      } else {
-        await tx.insert(categoryCommissionRates).values({
-          categoryId,
-          ...(marketingRate !== null ? { marketingFeeRate: marketingRate } : {}),
-          ...(marketplaceServiceRate !== null ? { marketplaceServiceFeeRate: marketplaceServiceRate } : {}),
-          ...(commissionRate !== null ? { rate: commissionRate } : {}),
-          ...(vatRate !== null ? { vatRate: vatRate } : {}),
-        });
-        inserted++;
-      }
-    }
+    await tx.execute(sql`
+      INSERT INTO category_commission_rates (${sql.join(insertCols, sql`, `)})
+      SELECT ${sql.join(insertVals, sql`, `)}
+      FROM marketplace_categories mc
+      LEFT JOIN category_commission_rates ccr
+        ON ccr.category_id = mc.id AND ccr.effective_to IS NULL
+      WHERE mc.marketplace_id = ${marketplaceId}
+        AND mc.tree_version = ${treeVersion}
+        AND ccr.id IS NULL
+    `);
   });
 
+  const countRows = await db.execute(sql`
+    SELECT COUNT(*)::int AS count
+    FROM category_commission_rates ccr
+    JOIN marketplace_categories mc ON mc.id = ccr.category_id
+    WHERE mc.marketplace_id = ${marketplaceId}
+      AND mc.tree_version = ${treeVersion}
+      AND ccr.effective_to IS NULL
+  `);
+
+  const count = Number((countRows as { count: number }[])[0]?.count ?? 0);
   console.log(
-    `marketplace=${marketplaceId} tree_version=${treeVersion}: ${categories.length} categories, ${updated} updated, ${inserted} inserted`,
+    `marketplace=${marketplaceId} tree_version=${treeVersion}: ${count} categories with open fee rows`,
   );
   await db.$client.end();
 }
