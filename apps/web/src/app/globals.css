@@ -76,6 +76,19 @@ body {
   font-size: 13px;
 }
 
+@layer base {
+  a[href]:not([aria-disabled="true"]),
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="link"],
+  [role="tab"],
+  label[for],
+  select:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+}
+
 ::selection {
   @apply bg-brand-soft text-ink;
 }

@@ -4,6 +4,7 @@ import {
   BookOpen,
   ChartLine,
   Code,
+  Crown,
   FileChartColumn,
   History,
   FolderTree,
@@ -48,6 +49,12 @@ export const navGroups: NavGroup[] = [
         description: "Takip ettiğin tüm ürünler ve son fiyatlar",
         href: "/takip/urunler",
         icon: Package,
+      },
+      {
+        title: "Buybox takibi",
+        description: "Pazaryeri bazında buybox durumu ve fiyat önerileri",
+        href: "/takip/buybox",
+        icon: Crown,
       },
       {
         title: "URL Ekle",
