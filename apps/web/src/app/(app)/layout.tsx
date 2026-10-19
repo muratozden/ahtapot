@@ -4,7 +4,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1 px-[clamp(16px,5vw,72px)] pt-6 pb-10">{children}</main>
+      <main className="mx-auto w-full max-w-[1320px] flex-1 px-4 pt-6 pb-10 sm:px-6 xl:px-8">{children}</main>
     </>
   );
 }

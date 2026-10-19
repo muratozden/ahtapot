@@ -2,6 +2,7 @@ import {
   ArrowLeftRight,
   BellRing,
   BookOpen,
+  Calculator,
   ChartLine,
   Code,
   Crown,
@@ -55,6 +56,12 @@ export const navGroups: NavGroup[] = [
         description: "Pazaryeri bazında buybox durumu ve fiyat önerileri",
         href: "/takip/buybox",
         icon: Crown,
+      },
+      {
+        title: "Maliyet girişi",
+        description: "Alış, kargo ve pazaryeri giderleriyle birim kâr hesabı",
+        href: "/takip/maliyet",
+        icon: Calculator,
       },
       {
         title: "URL Ekle",

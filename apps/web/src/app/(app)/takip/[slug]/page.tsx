@@ -7,7 +7,7 @@ import {
 
 type PageProps = { params: Promise<{ slug: string }> };
 
-const TAKIP_DEDICATED_SLUGS = new Set(["urunler", "buybox"]);
+const TAKIP_DEDICATED_SLUGS = new Set(["urunler", "buybox", "maliyet"]);
 
 export function generateStaticParams() {
   return sectionSlugStaticParams("takip").filter((p) => !TAKIP_DEDICATED_SLUGS.has(p.slug));

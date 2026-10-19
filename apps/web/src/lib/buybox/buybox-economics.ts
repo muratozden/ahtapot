@@ -66,7 +66,7 @@ export function adviseListing(
   const step = num(settings.step);
 
   if (!E) {
-    return { kind: "none", title: "Maliyet yok", text: "Maliyet girişi ekranı yakında eklenecek." };
+    return { kind: "none", title: "Maliyet yok", text: "Bu ürün adını maliyet girişinde kaydet." };
   }
   if (!ref) {
     return {

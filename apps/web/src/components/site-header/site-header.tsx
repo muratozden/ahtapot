@@ -12,7 +12,7 @@ import { SearchBar } from "./search-bar";
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-line/70 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
-      <div className="flex h-20 items-center gap-4 px-4 sm:px-6 xl:gap-8 xl:px-8">
+      <div className="mx-auto flex h-20 w-full max-w-[1320px] items-center gap-4 px-4 sm:px-6 xl:gap-8 xl:px-8">
         <div className="flex items-center gap-1">
           <Suspense fallback={<MobileNav />}>
             <RoleAwareMobileNav />

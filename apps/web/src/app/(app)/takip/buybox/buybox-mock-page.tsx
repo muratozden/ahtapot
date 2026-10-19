@@ -9,12 +9,12 @@ import { adviseListing, buildEconomics, refPrice } from "@/lib/buybox/buybox-eco
 import { formatPct, formatTry, has, num } from "@/lib/buybox/buybox-format";
 import {
   costOf,
-  DEMO_COSTS,
   loadBuyboxState,
   MARKETPLACE_LABELS,
   MARKETPLACE_ORDER,
   saveBuyboxState,
 } from "@/lib/buybox/buybox-mock-data";
+import { loadProductCosts, PRODUCT_COSTS_STORAGE_KEY } from "@/lib/product-costs/storage";
 import type {
   Advice,
   BuyboxFilterId,
@@ -23,6 +23,7 @@ import type {
   BuyboxView,
   ListingInfo,
   MarketplaceKey,
+  ProductCost,
 } from "@/lib/buybox/buybox-types";
 import { BuyboxEditDialog, type EditDialogContext } from "./buybox-edit-dialog";
 
@@ -59,14 +60,30 @@ const ADVICE_CLASS: Record<string, string> = {
 
 export function BuyboxMockPage() {
   const [state, setState] = useState<BuyboxState | null>(null);
-  const [costs] = useState(DEMO_COSTS);
-  const [isDemo] = useState(true);
+  const [costs, setCosts] = useState(() => loadProductCosts());
+  const [isDemo, setIsDemo] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !localStorage.getItem(PRODUCT_COSTS_STORAGE_KEY);
+  });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogCtx, setDialogCtx] = useState<EditDialogContext | null>(null);
   const [toast, setToast] = useState<{ msg: string; snap: BuyboxState } | null>(null);
 
   useEffect(() => {
     setState(loadBuyboxState());
+    setCosts(loadProductCosts());
+    setIsDemo(!localStorage.getItem(PRODUCT_COSTS_STORAGE_KEY));
+  }, []);
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === PRODUCT_COSTS_STORAGE_KEY) {
+        setCosts(loadProductCosts());
+        setIsDemo(!e.newValue);
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   const persist = useCallback((next: BuyboxState) => {
@@ -151,8 +168,11 @@ export function BuyboxMockPage() {
           <div>
             <h1 className="text-xl font-bold tracking-tight text-ink">Buybox takibi</h1>
             <p className="mt-1 max-w-2xl text-muted">
-              Her ürünü tüm pazaryerlerinde tek satırda gör, öneriyi tek tıkla uygula.{" "}
-              <span className="text-subtle">(Örnek veri — veritabanı bağlantısı sonra eklenecek.)</span>
+              Her ürünü tüm pazaryerlerinde tek satırda gör, öneriyi tek tıkla uygula. Maliyetler{" "}
+              <a href="/takip/maliyet" className="font-semibold text-ink hover:underline">
+                maliyet girişi
+              </a>{" "}
+              ekranından gelir.
             </p>
           </div>
         </div>
@@ -203,7 +223,7 @@ export function BuyboxMockPage() {
           )}
         >
           <span className={cn("size-2 rounded-full", isDemo ? "bg-amber-500" : "bg-drop")} />
-          {isDemo ? "Örnek maliyet verisi" : `Maliyet ekranından · ${costs.length} ürün`}
+          {isDemo ? "Örnek maliyet verisi" : `Maliyet girişinden · ${costs.length} ürün`}
         </p>
       </section>
 
@@ -259,6 +279,7 @@ export function BuyboxMockPage() {
           {state.view === "prod" ? (
             <ProductView
               state={state}
+              costs={costs}
               listingInfo={listingInfo}
               passesFilter={passesFilter}
               onEdit={openEdit}
@@ -363,12 +384,14 @@ function ViewToggle({ view, onChange }: { view: BuyboxView; onChange: (v: Buybox
 
 function ProductView({
   state,
+  costs,
   listingInfo,
   passesFilter,
   onEdit,
   onApply,
 }: {
   state: BuyboxState;
+  costs: ProductCost[];
   listingInfo: (p: BuyboxProduct, mp: MarketplaceKey) => ListingInfo | null;
   passesFilter: (i: ListingInfo) => boolean;
   onEdit: (pi: number, mp: MarketplaceKey) => void;
@@ -379,7 +402,7 @@ function ProductView({
       const infos = MARKETPLACE_ORDER.map((mp) => listingInfo(p, mp)).filter(Boolean) as ListingInfo[];
       if (state.filter !== "all" && !infos.some(passesFilter)) return null;
       const mine = infos.filter((x) => x.l.status === "mine").length;
-      const hasCost = costOf(p.prod, DEMO_COSTS);
+      const hasCost = costOf(p.prod, costs);
       return (
         <tr key={p.prod}>
           <td className="min-w-[200px] px-3 py-3 align-top">
