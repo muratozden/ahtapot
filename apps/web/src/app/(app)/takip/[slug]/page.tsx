@@ -7,8 +7,10 @@ import {
 
 type PageProps = { params: Promise<{ slug: string }> };
 
+const TAKIP_DEDICATED_SLUGS = new Set(["urunler"]);
+
 export function generateStaticParams() {
-  return sectionSlugStaticParams("takip");
+  return sectionSlugStaticParams("takip").filter((p) => !TAKIP_DEDICATED_SLUGS.has(p.slug));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

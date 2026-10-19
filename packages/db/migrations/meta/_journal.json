@@ -64,6 +64,13 @@
       "when": 1792344000000,
       "tag": "0008_pazarama_marketplace",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792410000000,
+      "tag": "0009_listing_product_fields",
+      "breakpoints": true
     }
   ]
 }
